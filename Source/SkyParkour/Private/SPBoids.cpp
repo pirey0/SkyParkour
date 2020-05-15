@@ -1,0 +1,122 @@
+
+#include "SPBoids.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Kismet/KismetMathLibrary.h"
+
+// Sets default values
+ASPBoids::ASPBoids()
+{
+
+	m_Boids = CreateDefaultSubobject<UHierarchicalInstancedStaticMeshComponent>(TEXT("Boids"));
+	m_Boids->bEditableWhenInherited = true;
+
+
+	m_Radius = 5000;
+	m_Amount = 30;
+
+	m_StartSpeed = 100;
+	m_MinSpeed = 100;
+	m_MaxSpeed = 3000;
+	m_CohesionMult = 0.1f;
+	m_AlignmentMult = 0.01f;
+	m_SeparationMult = 2000;
+	m_TargetMult = 300;
+	m_Target = FVector::ZeroVector;
+
+	m_IterationIndex = 0;
+}
+
+// Called when the game starts or when spawned
+void ASPBoids::BeginPlay()
+{
+	PrimaryActorTick.bCanEverTick = true;
+	Super::BeginPlay();
+	SpawnBoids();
+}
+
+void ASPBoids::SpawnBoids()
+{
+	m_Boids->ClearInstances();
+
+	m_BoidsData.Empty();
+
+	for (size_t i = 0; i < m_Amount; i++)
+	{
+		FBoidData data = FBoidData();
+
+		FVector position = UKismetMathLibrary::RandomUnitVector() * UKismetMathLibrary::RandomFloatInRange(0.2f, 1) * m_Radius;
+		FRotator rotation = UKismetMathLibrary::RandomRotator();
+		FVector scale = UKismetMathLibrary::RandomFloat() * FVector::OneVector;
+		FTransform transform = FTransform(rotation, position, scale);
+
+		m_Boids->AddInstance(transform);
+
+		data.Transform = transform;
+		data.Velocity = rotation.Vector() * m_StartSpeed;
+
+		m_BoidsData.Add(data);
+	}
+}
+
+void ASPBoids::UpdateBoids(float DeltaTime)
+{
+	UpdateVelocities(DeltaTime);
+	UpdatePositions(DeltaTime);
+
+	for (size_t i = 0; i < m_Amount; i++)
+	{
+		m_Boids->UpdateInstanceTransform(i, m_BoidsData[i].Transform, false);
+	}
+}
+
+void ASPBoids::UpdateVelocities(float DeltaTime)
+{
+	m_IterationIndex++;
+	if (m_IterationIndex >= m_Amount)
+		m_IterationIndex = 0;
+
+	FBoidData Current = m_BoidsData[m_IterationIndex];
+
+	FVector Center = Current.Transform.GetLocation();
+	FVector Alignment = Current.Velocity * m_AlignmentMult;
+
+	for (size_t i = 0; i < m_Amount; i++)
+	{
+		if (i == m_IterationIndex)
+			continue;
+
+		FVector MyPos = m_BoidsData[i].Transform.GetLocation();
+
+		FVector Dir = Current.Transform.GetLocation() - MyPos;
+
+		FVector Separation = (Dir / Dir.SizeSquared()) * m_SeparationMult;
+		FVector Cohesion = (Center - MyPos) * m_CohesionMult;
+
+		FVector TargetDir = (m_Target - (GetActorLocation() + MyPos)).GetSafeNormal() * m_TargetMult;
+
+		FVector Force = Separation + Alignment + Cohesion + TargetDir;
+
+		m_BoidsData[i].Velocity = UKismetMathLibrary::ClampVectorSize(m_BoidsData[i].Velocity + Force * DeltaTime, m_MinSpeed, m_MaxSpeed);
+	}
+}
+
+void ASPBoids::UpdatePositions(float DeltaTime)
+{
+	for (size_t i = 0; i < m_Amount; i++)
+	{
+		FTransform Transform = m_BoidsData[i].Transform;
+		FVector Velocity = m_BoidsData[i].Velocity;
+		Transform.SetLocation(Transform.GetLocation() + Velocity * DeltaTime);
+		Transform.SetRotation(UKismetMathLibrary::MakeRotFromZ(Velocity).Quaternion());
+
+		m_BoidsData[i].Transform = Transform;
+	}
+}
+
+// Called every frame
+void ASPBoids::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	UpdateBoids(DeltaTime);
+}
+
