@@ -6,18 +6,6 @@
 
 class UHierarchicalInstancedStaticMeshComponent;
 
-
-USTRUCT()
-struct SKYPARKOUR_API FBoidData 
-{
-	GENERATED_BODY()
-
-public: 
-	FTransform Transform;
-	FVector Velocity;
-};
-
-
 UCLASS()
 class SKYPARKOUR_API ASPBoids : public AActor
 {
@@ -32,7 +20,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Boids")
-	UHierarchicalInstancedStaticMeshComponent* m_Boids;
+		UHierarchicalInstancedStaticMeshComponent* m_Boids;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Boids")
 		int m_Radius;
@@ -66,7 +54,7 @@ protected:
 
 	int m_IterationIndex;
 
-	TArray<FBoidData> m_BoidsData;
+	TArray<FVector> m_Velocities;
 
 	void SpawnBoids();
 
