@@ -33,7 +33,7 @@ class UMapNamesBPLibrary : public UBlueprintFunctionLibrary
 	{
 		TArray<FString> MapFiles;
 
-		IFileManager::Get().FindFilesRecursive(MapFiles, *FPaths::GameContentDir(), TEXT("*.umap"), true, false, false);
+		IFileManager::Get().FindFilesRecursive(MapFiles, *FPaths::GameSourceDir(), TEXT("*.umap"), true, false, false);
 
 		for (int32 i = 0; i < MapFiles.Num(); i++)
 		{
@@ -62,7 +62,7 @@ class UMapNamesBPLibrary : public UBlueprintFunctionLibrary
 	{
 		TArray<FString> MapFiles;
 
-		IFileManager::Get().FindFilesRecursive(MapFiles, *FPaths::GameContentDir(), TEXT("*.umap"), true, false, false);
+		IFileManager::Get().FindFilesRecursive(MapFiles, *FPaths::GameSourceDir(), TEXT("*.umap"), true, false, false);
 
 		for (int32 i = 0; i < MapFiles.Num(); i++)
 		{
