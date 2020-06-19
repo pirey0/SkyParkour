@@ -54,12 +54,16 @@ void ASPBoids::UpdateVelocities(float DeltaTime)
 {
 	m_IterationIndex++;
 	if (m_IterationIndex >= m_Amount)
+	{
 		m_IterationIndex = 0;
+	}	
 
 	FTransform Current;
 	m_Boids->GetInstanceTransform(m_IterationIndex, Current);
 	FVector Center = Current.GetLocation();
+
 	FVector Alignment = m_Velocities[m_IterationIndex] * m_AlignmentMult;
+	m_BoidCenterCounter = FVector::ZeroVector;
 
 	for (size_t i = 0; i < m_Amount; i++)
 	{
@@ -71,12 +75,16 @@ void ASPBoids::UpdateVelocities(float DeltaTime)
 
 		FVector MyPos = Local.GetLocation();
 		FVector Dir = Center - MyPos;
-		FVector Separation = (Dir / Dir.SizeSquared()) * m_SeparationMult;
-		FVector Cohesion = (Center - MyPos) * m_CohesionMult;
+		FVector Separation = -(Dir / FMath::Sqrt(Dir.Size())) * m_SeparationMult;
+		FVector Cohesion = (m_BoidCenter - MyPos) * m_CohesionMult;
 		FVector TargetDir = (m_Target - (GetActorLocation() + MyPos)).GetSafeNormal() * m_TargetMult;
 		FVector Force = Separation + Alignment + Cohesion + TargetDir;
 		m_Velocities[i] = UKismetMathLibrary::ClampVectorSize(m_Velocities[i] + Force * DeltaTime, m_MinSpeed, m_MaxSpeed);
+
+		m_BoidCenterCounter += MyPos;
 	}
+
+	m_BoidCenter = m_BoidCenterCounter / m_Amount;
 }
 
 void ASPBoids::UpdatePositions(float DeltaTime)
