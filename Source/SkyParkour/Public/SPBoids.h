@@ -50,6 +50,11 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Boids")
 		FVector m_Target;
 
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Boids")
+	FVector m_BoidCenter;
+
+	FVector m_BoidCenterCounter;
+
 	int m_IterationIndex;
 
 	TArray<FVector> m_Velocities;
