@@ -18,6 +18,7 @@ ASPBoids::ASPBoids()
 	m_TargetMult = 300;
 	m_Target = FVector::ZeroVector;
 	m_IterationIndex = 0;
+	m_SpawnSize = 1;
 }
 
 void ASPBoids::BeginPlay()
@@ -36,11 +37,11 @@ void ASPBoids::SpawnBoids()
 	{
 		FVector position = UKismetMathLibrary::RandomUnitVector() * UKismetMathLibrary::RandomFloatInRange(0.2f, 1) * m_Radius;
 		FRotator rotation = UKismetMathLibrary::RandomRotator();
-		FVector scale = UKismetMathLibrary::RandomFloat() * FVector::OneVector;
+		FVector scale = UKismetMathLibrary::RandomFloatInRange(0.5,1) * FVector::OneVector * m_SpawnSize;
 		FTransform transform = FTransform(rotation, position, scale);
 
 		m_Boids->AddInstance(transform);
-		m_Velocities.Add(rotation.Vector() * m_StartSpeed);
+		m_Velocities.Add(UKismetMathLibrary::RandomUnitVector() * m_StartSpeed);
 	}
 }
 

@@ -53,6 +53,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Boids")
 	FVector m_BoidCenter;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Boids")
+		float m_SpawnSize;
+
 	FVector m_BoidCenterCounter;
 
 	int m_IterationIndex;
